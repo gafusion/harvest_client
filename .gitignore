@@ -1,0 +1,9 @@
+\#*\#
+*.pyc
+clientC
+clientF
+a.out
+*~
+.idea/
+*.a
+*.o
