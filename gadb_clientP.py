@@ -63,3 +63,46 @@ def harvest_send(payload, table='test_omfit', host=None, port=None, verbose=None
     sock.sendto(message, (host,port))
 
     return (host,port,message)
+
+def harvest_nc(filename,table='test_omfit', entries=None, host=None, port=None, verbose=None):
+    '''
+    Function to send 0d data contained in a netcdf file to the harvesting server
+
+    :param filename: nectdf3 file
+
+    :param table: table where to put the data
+
+    :param host: harvesting server address
+    If None take value from `HARVEST_HOST` environemental variable, or use default `gadb-harvest.ddns.net` if not set.
+
+    :param port: port the harvesting server is listening on.
+    If None take value from `HARVEST_PORT` environemental variable, or use default `0` if not set.
+
+    :param verbose: print harvest message to screen
+    If None take value from `HARVEST_VERBOSE` environemental variable, or use default `False` if not set.
+
+    :return: tuple with used (host, port, message)
+    '''
+    import netCDF4
+    
+    nc = netCDF4.Dataset(filename,'r',format='NETCDF3_CLASSIC')
+
+    payload={}
+
+    if entries is None:
+        entries=nc.variables.keys()
+    
+    for entry in entries:
+        if entry in nc.variables.keys():
+            try:
+                value=nc.variables[entry].getValue()[0]
+            except Exception:
+                value=nc.variables[entry][:]
+            if len(value)==1:
+                payload[entry]=value[0]
+                if verbose:
+                    print(str(entry), value[0])
+
+    nc.close()
+
+    return harvest_send(payload, table=table, host=host, port=port, verbose=verbose)
