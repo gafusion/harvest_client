@@ -21,4 +21,5 @@ if False:
         harvest_send(data,'test_omfit?',host='localhost',verbose=True)
 
 else:
-    harvest_nc('eped.nc','test_nc?',verbose=True)
+    data=harvest_nc('eped.nc',verbose=True)
+    harvest_send(data,'test_omfit?',host='localhost',verbose=True)

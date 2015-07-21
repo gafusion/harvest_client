@@ -64,24 +64,17 @@ def harvest_send(payload, table='test_omfit', host=None, port=None, verbose=None
 
     return (host,port,message)
 
-def harvest_nc(filename,table='test_omfit', entries=None, host=None, port=None, verbose=None):
+def harvest_nc(filename, entries=None, verbose=False):
     '''
-    Function to send 0d data contained in a netcdf file to the harvesting server
+    Function that returns 0d data contained in a netcdf file to be sent by harvest_send
 
     :param filename: nectdf3 file
 
-    :param table: table where to put the data
+    :param entries: subset of variables to loof for in the NetCDF file
 
-    :param host: harvesting server address
-    If None take value from `HARVEST_HOST` environemental variable, or use default `gadb-harvest.ddns.net` if not set.
+    :param verbose: print payload
 
-    :param port: port the harvesting server is listening on.
-    If None take value from `HARVEST_PORT` environemental variable, or use default `0` if not set.
-
-    :param verbose: print harvest message to screen
-    If None take value from `HARVEST_VERBOSE` environemental variable, or use default `False` if not set.
-
-    :return: tuple with used (host, port, message)
+    :return: payload
     '''
     import netCDF4
     
@@ -105,4 +98,4 @@ def harvest_nc(filename,table='test_omfit', entries=None, host=None, port=None, 
 
     nc.close()
 
-    return harvest_send(payload, table=table, host=host, port=port, verbose=verbose)
+    return payload
