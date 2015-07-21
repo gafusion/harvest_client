@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from harvest import *
+from harvest_lib import *
 from numpy.random import *
 
 if False:
@@ -18,7 +18,7 @@ if False:
         #data['+ctrl'+str(k)]=randn()
         data['dbl']=randn()
         data['flt']=randn()*10
-        harvest_send(data,'test_omfit?3',host='localhost',verbose=True)
+        harvest_send(data,'test_omfit?',host='localhost',verbose=True)
 
 else:
-    harvest_nc('eped.nc','test_nc?0',verbose=True)
+    harvest_nc('eped.nc','test_nc?',verbose=True)

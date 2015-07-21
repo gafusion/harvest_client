@@ -1,31 +1,25 @@
 include ${GACODE_ROOT}/shared/install/make.inc.${GACODE_PLATFORM}
 
-LLIB=GADB_lib
+LLIB=harvest_lib
 
-EXEC = clientC \
-       clientF
+EXEC = lib clientC clientF
 
-OBJECTS = send2DB.o \
-          gadb_clientC.o \
-          gadb_clientF.o
+OBJECTS = harvest_lib.o harvest_clientC.o harvest_clientF.o
 
-.SUFFIXES : .o .c
+lib: harvest_lib.o Makefile
+	$(ARCH) $(LLIB).a harvest_lib.o
 
-lib: send2DB.o Makefile
-	$(ARCH) $(LLIB).a send2DB.o
+clientC : lib harvest_client.c
+	$(CC) $(CFLAGS) -o clientC harvest_lib.o harvest_client.c
 
-.c.o : *.c Makefile
-	$(CC) $(CFLAGS) -c $<
+clientF : lib harvest_client.f90
+	$(FC) $(FFLAGS) -o clientF harvest_lib.o harvest_client.f90
 
-gadb_clientF.o : gadb_clientF.f90 Makefile
-	$(FC) $(FFLAGS) -c $<
-
-all: $(OBJECTS) Makefile
-	$(CC) $(CFLAGS) -o clientC send2DB.o gadb_clientC.o
-	$(FC) $(FFLAGS) -o clientF send2DB.o gadb_clientF.o
+all: $(EXEC)
 
 clean:
 	rm -f *.o $(LLIB).a $(EXEC)
 
 gacode_install: all
-	cp -f Makefile send2DB.c send2DB.h ${GACODE_ROOT}/shared/gadb/
+	mkdir ${GACODE_ROOT}/shared/harvest_client
+	cp -f Makefile harvest_lib.c harvest_lib.h ${GACODE_ROOT}/shared/harvest_client/

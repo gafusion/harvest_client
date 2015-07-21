@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "send2DB.h"
+#include "harvest_lib.h"
 
 int main(int argc, char**argv){
 
@@ -7,7 +7,7 @@ int main(int argc, char**argv){
 
   char harvest_sendline[65507]; //max UDP message size
 
-  init_harvest("test_omfit?10",harvest_sendline,sizeof(harvest_sendline));
+  init_harvest("test_omfit?",harvest_sendline,sizeof(harvest_sendline));
   set_harvest_verbose(1);
 
   set_harvest_payload_str(harvest_sendline,"str","C");
