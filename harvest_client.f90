@@ -5,14 +5,18 @@ program f_call_c
   CHARACTER  NUL
   PARAMETER (NUL = CHAR(0))
   INTEGER :: i1, i2, i3, ierr
-  REAL :: r1, r2, r3
-  NAMELIST/inputs/i1, i2, i3, r1, r2, r3
+  REAL :: r1, r2, r3, arr1(2,4)
+  NAMELIST/inputs/i1, i2, i3, r1, r2, r3, arr1
   i1 = 1
   i2 = 2
   i3 = 3
   r1 = 1.
   r2 = 2.
   r3 = 3.
+  arr1(1,1) = 1
+  arr1(2,1) = 2
+  arr1(1,2) = 3
+  arr1(2,2) = 4
   
   write(namelist_str,nml=inputs)
   write(*,*) TRIM(namelist_str)
