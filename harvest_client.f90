@@ -1,8 +1,21 @@
 program f_call_c
 
   CHARACTER(LEN=65507) :: harvest_sendline
+  CHARACTER(LEN=50000) :: namelist_str
   CHARACTER  NUL
   PARAMETER (NUL = CHAR(0))
+  INTEGER :: i1, i2, i3, ierr
+  REAL :: r1, r2, r3
+  NAMELIST/inputs/i1, i2, i3, r1, r2, r3
+  i1 = 1
+  i2 = 2
+  i3 = 3
+  r1 = 1.
+  r2 = 2.
+  r3 = 3.
+  
+  write(namelist_str,nml=inputs)
+  write(*,*) TRIM(namelist_str)
 
   ierr=init_harvest('test_omfit?'//NUL,harvest_sendline,LEN(harvest_sendline))
   ierr=set_harvest_verbose(1)
