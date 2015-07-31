@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def data_2_message(payload):
+def _data_2_message(payload):
     import numpy
 
     message=[]
@@ -9,9 +9,9 @@ def data_2_message(payload):
         if isinstance(data,bool):
             tp='b'
             data=int(data)
-        elif isinstance(data,int):
+        elif numpy.array(data).dtype.kind=='i':
             tp='i'
-        elif isinstance(data,float):
+        elif numpy.array(data).dtype.kind=='f':
             tp='f'
         elif isinstance(data,(list,tuple,numpy.ndarray)):
             tp='a'
@@ -20,7 +20,7 @@ def data_2_message(payload):
             tp='s'
             data=data.strip()
         else:
-            raise('%s objects of type %s are not supported'%(what,type(data)))
+            raise(Exception('%s objects of type %s are not supported'%(what,type(data))))
         message.append(tp+'@'+what+'='+repr(data))
 
     return '|'.join(message)
@@ -65,8 +65,10 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
     payload=copy.deepcopy(payload)
     payload['_user']=os.environ['USER']
+    payload['_hostname']=socket.gethostname()
+    payload['_workdir']=os.getcwd()
 
-    message = "%d:%s:"%(version,table) + data_2_message(payload)
+    message = "%d:%s:"%(version,table) + _data_2_message(payload)
 
     if verbose:
         print("%s:%d --> %s"%(host,port,message))
