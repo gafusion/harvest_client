@@ -5,9 +5,9 @@ int main(int argc, char**argv){
 
   set_harvest_verbose(1);
 
-  char harvest_sendline[65507]; //max UDP message size
+  char harvest_sendline[65507];
 
-  init_harvest("test_omfit?",harvest_sendline,sizeof(harvest_sendline));
+  init_harvest("test_harvest?",harvest_sendline,sizeof(harvest_sendline));
   set_harvest_verbose(1);
 
   set_harvest_payload_str(harvest_sendline,"str","C");

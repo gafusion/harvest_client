@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include<netdb.h>
 #include<arpa/inet.h>
 char harvest_table[50];
@@ -16,23 +17,19 @@ clock_t harvest_tic;
 clock_t harvest_toc;
 
 //Get ip from domain name
-int hostname_to_ip(char * hostname , char* ip)
-{
+int hostname_to_ip(char * hostname , char* ip){
     struct hostent *he;
     struct in_addr **addr_list;
     int i;
 
-    if ( (he = gethostbyname( hostname ) ) == NULL)
-    {
+    if ( (he = gethostbyname( hostname ) ) == NULL){
         // get the host info
-        herror("gethostbyname");
+        strcpy(ip , "127.0.0.1" );
         return 1;
     }
 
     addr_list = (struct in_addr **) he->h_addr_list;
-
-    for(i = 0; addr_list[i] != NULL; i++)
-    {
+    for(i = 0; addr_list[i] != NULL; i++){
         //Return the first one;
         strcpy(ip , inet_ntoa(*addr_list[i]) );
         return 0;
@@ -59,8 +56,8 @@ int set_harvest_verbose_(int *verbose){
 }
 
 //payload string
-int set_harvest_payload_str(char *harvest_sendline, char *what, char *data){
-  sprintf(harvest_sendline,"%s,s@%s=%s",harvest_sendline,what,data);
+int set_harvest_payload_str_base(char *harvest_sendline, char *what, char *data, char *prepend){
+  sprintf(harvest_sendline,"%s|%s@%s=%s",harvest_sendline,prepend,what,data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("s@%s=%s\n",what,data);
@@ -68,14 +65,30 @@ int set_harvest_payload_str(char *harvest_sendline, char *what, char *data){
   return 0;
 }
 
+int set_harvest_payload_str(char *harvest_sendline, char *what, char *data){
+  set_harvest_payload_str_base(harvest_sendline,what,data,"s");
+  return 0;
+}
+
 int set_harvest_payload_str_(char *harvest_sendline, char *what, char *data){
-  set_harvest_payload_str(harvest_sendline,what,data);
+  set_harvest_payload_str_base(harvest_sendline,what,data,"s");
+  return 0;
+}
+
+//payload namelist
+int set_harvest_payload_nam(char *harvest_sendline, char *what, char *data){
+  set_harvest_payload_str_base(harvest_sendline,what,data,"n");
+  return 0;
+}
+
+int set_harvest_payload_nam_(char *harvest_sendline, char *what, char *data){
+  set_harvest_payload_str_base(harvest_sendline,what,data,"n");
   return 0;
 }
 
 //payload int
 int set_harvest_payload_int(char *harvest_sendline, char *what, int data){
-  sprintf(harvest_sendline,"%s,i@%s=%d",harvest_sendline,what,data);
+  sprintf(harvest_sendline,"%s|i@%s=%d",harvest_sendline,what,data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("i@%s=%d\n",what,data);
@@ -91,7 +104,7 @@ int set_harvest_payload_int_(char *harvest_sendline, char *what, int *data){
 
 //payload switch (0-255)
 int set_harvest_payload_swt(char *harvest_sendline, char *what, int data){
-  sprintf(harvest_sendline,"%s,t@%s=%d",harvest_sendline,what,data);
+  sprintf(harvest_sendline,"%s|t@%s=%d",harvest_sendline,what,data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("i@%s=%d\n",what,data);
@@ -107,7 +120,7 @@ int set_harvest_payload_swt_(char *harvest_sendline, char *what, int *data){
 
 ////payload float
 int set_harvest_payload_flt(char *harvest_sendline, char *what, double data){
-  sprintf(harvest_sendline,"%s,f@%s=%g",harvest_sendline,what,(float) data);
+  sprintf(harvest_sendline,"%s|f@%s=%g",harvest_sendline,what,(float) data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("f@%s=%g\n",what,(float) data);
@@ -123,7 +136,7 @@ int set_harvest_payload_flt_(char *harvest_sendline, char *what, float *data){
 
 ////payload double
 int set_harvest_payload_dbl(char *harvest_sendline, char *what, double data){
-  sprintf(harvest_sendline,"%s,f@%s=%g",harvest_sendline,what,data);
+  sprintf(harvest_sendline,"%s|f@%s=%g",harvest_sendline,what,data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("f@%s=%g\n",what,data);
@@ -139,7 +152,7 @@ int set_harvest_payload_dbl_(char *harvest_sendline, char *what, double *data){
 
 ////payload boolean
 int set_harvest_payload_bol(char *harvest_sendline, char *what, int data){
-  sprintf(harvest_sendline,"%s,b@%s=%d",harvest_sendline,what,data);
+  sprintf(harvest_sendline,"%s|b@%s=%d",harvest_sendline,what,data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("b@%s=%d\n",what,data!=0);
@@ -240,26 +253,34 @@ int harvest_send(char* harvest_sendline){
   int version;
   struct sockaddr_in servaddr,cliaddr;
   char sendline[harvest_sendline_n]; //max UDP message size
-  char ip[15];
+  char harvest_ip[15];
+  char hostname[128];
 
-  version=2;
+  version=3;
 
-  hostname_to_ip(harvest_host, ip);
+  hostname_to_ip(harvest_host, harvest_ip);
+  gethostname(hostname, sizeof hostname);
 
   sockfd=socket(AF_INET,SOCK_DGRAM,0);
   bzero(&servaddr,sizeof(servaddr));
   servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr=inet_addr(ip);
+  servaddr.sin_addr.s_addr=inet_addr(harvest_ip);
   servaddr.sin_port=htons(harvest_port);
 
-  sprintf(sendline,"%d:%s:s@_user=%s,s@_tag=%s%s",version,harvest_table,getenv("USER"),harvest_tag,harvest_sendline);
+  sprintf(sendline,"%d",version);
+  sprintf(sendline,"%s:%s",sendline,harvest_table);
+  sprintf(sendline,"%s:s@_user=%s",sendline,getenv("USER"));
+  sprintf(sendline,"%s|s@_hostname=%s",sendline,hostname);
+  sprintf(sendline,"%s|s@_workdir=%s",sendline,getenv("PWD"));
+  sprintf(sendline,"%s|s@_tag=%s",sendline,getenv(harvest_tag));
+  sprintf(sendline,"%s|s@_tag=%s",sendline,harvest_sendline);
   memset(harvest_sendline, 0, harvest_sendline_n);
   sendto(sockfd,sendline,strlen(sendline),0,
              (struct sockaddr *)&servaddr,sizeof(servaddr));
 
   harvest_toc=clock();
   if (harvest_verbose){
-    printf("%s:%d --> %s\n",ip,harvest_port,sendline);
+    printf("%s:%d --> %s\n",harvest_ip,harvest_port,sendline);
     printf("===HARVEST ends=== (%3.3f ms)\n",(double)(harvest_toc - harvest_tic) / CLOCKS_PER_SEC * 1E3);
   }
   return 0;

@@ -1,6 +1,23 @@
 #!/usr/bin/env python
 
-def harvest_send(payload, table='test_omfit', host=None, port=None, verbose=None):
+def data_2_message(payload):
+    message=[]
+    for what in payload.keys():
+        data=payload[what]
+        if isinstance(payload[what],bool):
+            tp='b'
+            data=int(data)
+        elif isinstance(payload[what],int):
+            tp='i'
+        elif isinstance(payload[what],float):
+            tp='f'
+        else:
+            tp='s'
+        message.append(tp+'@'+what+'='+str(data))
+
+    return '|'.join(message)
+
+def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=None):
     '''
     Function to send data to the harvesting server
 
@@ -21,7 +38,7 @@ def harvest_send(payload, table='test_omfit', host=None, port=None, verbose=None
     '''
     import os,socket,copy
 
-    version=2
+    version=3
 
     if host is None:
         host='gadb-harvest.ddns.net'
@@ -41,20 +58,7 @@ def harvest_send(payload, table='test_omfit', host=None, port=None, verbose=None
     payload=copy.deepcopy(payload)
     payload['_user']=os.environ['USER']
 
-    message = ["%d:%s:"%(version,table)]
-    for what in payload.keys():
-        data=payload[what]
-        if isinstance(payload[what],bool):
-            tp='b'
-            data=int(data)
-        elif isinstance(payload[what],int):
-            tp='i'
-        elif isinstance(payload[what],float):
-            tp='f'
-        else:
-            tp='s'
-        message.append(tp+'@'+what+'='+str(data))
-    message=message[0]+','.join(message[1:])
+    message = "%d:%s:"%(version,table) + data_2_message(payload)
 
     if verbose:
         print("%s:%d --> %s"%(host,port,message))

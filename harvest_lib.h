@@ -2,6 +2,7 @@ int hostname_to_ip(char * hostname , char* ip);
 int print_storage(char *harvest_sendline);
 int set_harvest_verbose(int verbose);
 int set_harvest_payload_str(char *harvest_sendline, char *what, char *data);
+int set_harvest_payload_nam(char *harvest_sendline, char *what, char *data);
 int set_harvest_payload_int(char *harvest_sendline, char *what, int data);
 int set_harvest_payload_swt(char *harvest_sendline, char *what, int data);
 int set_harvest_payload_flt(char *harvest_sendline, char *what, double data);
