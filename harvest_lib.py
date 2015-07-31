@@ -1,19 +1,27 @@
 #!/usr/bin/env python
 
 def data_2_message(payload):
+    import numpy
+
     message=[]
     for what in payload.keys():
         data=payload[what]
-        if isinstance(payload[what],bool):
+        if isinstance(data,bool):
             tp='b'
             data=int(data)
-        elif isinstance(payload[what],int):
+        elif isinstance(data,int):
             tp='i'
-        elif isinstance(payload[what],float):
+        elif isinstance(data,float):
             tp='f'
-        else:
+        elif isinstance(data,(list,tuple,numpy.ndarray)):
+            tp='a'
+            data=numpy.atleast_1d(data).flatten().tolist()
+        elif isinstance(data,basestring):
             tp='s'
-        message.append(tp+'@'+what+'='+str(data))
+            data=data.strip()
+        else:
+            raise('%s objects of type %s are not supported'%(what,type(data)))
+        message.append(tp+'@'+what+'='+repr(data))
 
     return '|'.join(message)
 

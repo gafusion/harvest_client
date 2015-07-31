@@ -57,7 +57,11 @@ int set_harvest_verbose_(int *verbose){
 
 //payload string
 int set_harvest_payload_str_base(char *harvest_sendline, char *what, char *data, char *prepend){
-  sprintf(harvest_sendline,"%s|%s@%s=%s",harvest_sendline,prepend,what,data);
+  if ( (data == NULL) || (strlen(harvest_sendline)==0) ){
+    sprintf(harvest_sendline,"%s|%s@%s=",harvest_sendline,prepend,what);
+  }else{
+    sprintf(harvest_sendline,"%s|%s@%s=\"%s\"",harvest_sendline,prepend,what,data);
+  }
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("s@%s=%s\n",what,data);
@@ -119,8 +123,8 @@ int set_harvest_payload_swt_(char *harvest_sendline, char *what, int *data){
 }
 
 ////payload float
-int set_harvest_payload_flt(char *harvest_sendline, char *what, double data){
-  sprintf(harvest_sendline,"%s|f@%s=%g",harvest_sendline,what,(float) data);
+int set_harvest_payload_flt(char *harvest_sendline, char *what, float data){
+  sprintf(harvest_sendline,"%s|f@%s=%g",harvest_sendline,what,data);
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("f@%s=%g\n",what,(float) data);
@@ -131,6 +135,30 @@ int set_harvest_payload_flt(char *harvest_sendline, char *what, double data){
 int set_harvest_payload_flt_(char *harvest_sendline, char *what, float *data){
   float data_ = *data;
   set_harvest_payload_flt(harvest_sendline,what,data_);
+  return 0;
+}
+
+////payload float array
+int set_harvest_payload_flt_array(char *harvest_sendline, char *what, float *data, int len){
+  int i;
+  char datastr[65507];
+  sprintf(datastr,"[");
+  for(i = 0; i < len; i++){
+    sprintf(datastr,"%s%g,",datastr,*(data+i));
+  }
+  sprintf(datastr,"%s]",datastr);
+  sprintf(harvest_sendline,"%s|a@%s=%s",harvest_sendline,what,datastr);
+
+  if (harvest_verbose){
+    print_storage(harvest_sendline);
+    printf("f@%s=%s\n",what,datastr);
+  }
+  return 0;
+}
+
+int set_harvest_payload_flt_array_(char *harvest_sendline, char *what, float *data, int *len){
+  int len_ = *len;
+  set_harvest_payload_flt_array(harvest_sendline,what,data,len_);
   return 0;
 }
 
@@ -147,6 +175,30 @@ int set_harvest_payload_dbl(char *harvest_sendline, char *what, double data){
 int set_harvest_payload_dbl_(char *harvest_sendline, char *what, double *data){
   double data_ = *data;
   set_harvest_payload_dbl(harvest_sendline,what,data_);
+  return 0;
+}
+
+////payload double array
+int set_harvest_payload_dbl_array(char *harvest_sendline, char *what, double *data, int len){
+  int i;
+  char datastr[65507];
+  sprintf(datastr,"[");
+  for(i = 0; i < len; i++){
+    sprintf(datastr,"%s%g,",datastr,*(data+i));
+  }
+  sprintf(datastr,"%s]",datastr);
+  sprintf(harvest_sendline,"%s|a@%s=%s",harvest_sendline,what,datastr);
+
+  if (harvest_verbose){
+    print_storage(harvest_sendline);
+    printf("f@%s=%s\n",what,datastr);
+  }
+  return 0;
+}
+
+int set_harvest_payload_dbl_array_(char *harvest_sendline, char *what, double *data, int *len){
+  int len_ = *len;
+  set_harvest_payload_dbl_array(harvest_sendline,what,data,len_);
   return 0;
 }
 
@@ -267,13 +319,12 @@ int harvest_send(char* harvest_sendline){
   servaddr.sin_addr.s_addr=inet_addr(harvest_ip);
   servaddr.sin_port=htons(harvest_port);
 
-  sprintf(sendline,"%d",version);
-  sprintf(sendline,"%s:%s",sendline,harvest_table);
-  sprintf(sendline,"%s:s@_user=%s",sendline,getenv("USER"));
-  sprintf(sendline,"%s|s@_hostname=%s",sendline,hostname);
-  sprintf(sendline,"%s|s@_workdir=%s",sendline,getenv("PWD"));
-  sprintf(sendline,"%s|s@_tag=%s",sendline,getenv(harvest_tag));
-  sprintf(sendline,"%s|s@_tag=%s",sendline,harvest_sendline);
+  set_harvest_payload_str(harvest_sendline,"_user",getenv("USER"));
+  set_harvest_payload_str(harvest_sendline,"_hostname",hostname);
+  set_harvest_payload_str(harvest_sendline,"_workdir",getenv("PWD"));
+  set_harvest_payload_str(harvest_sendline,"_tag",getenv(harvest_tag));
+
+  sprintf(sendline,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
   sendto(sockfd,sendline,strlen(sendline),0,
              (struct sockaddr *)&servaddr,sizeof(servaddr));
