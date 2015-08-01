@@ -1,20 +1,6 @@
 program havest_clientF
   IMPLICIT NONE
-!  INCLUDE 'harvest_lib.inc' !this is not necessary if INCLUDE NONE is not there
-
-
-  EXTERNAL init_harvest, harvest_send, set_harvest_payload_nam, &
-    & set_harvest_payload_dbl_array, set_harvest_payload_flt_array, &
-    & set_harvest_payload_bol, set_harvest_payload_dbl, &
-    & set_harvest_payload_flt, set_harvest_payload_swt, &
-    & set_harvest_payload_int, set_harvest_payload_str, &
-    & set_harvest_verbose
-  INTEGER :: init_harvest, harvest_send, set_harvest_payload_nam, &
-    & set_harvest_payload_dbl_array, set_harvest_payload_flt_array, &
-    & set_harvest_payload_bol, set_harvest_payload_dbl, &
-    & set_harvest_payload_flt, set_harvest_payload_swt, &
-    & set_harvest_payload_int, set_harvest_payload_str, &
-    & set_harvest_verbose
+  INCLUDE 'harvest_lib.inc' !this is not necessary if INCLUDE NONE is not there
   CHARACTER(LEN=65507) :: harvest_sendline
   CHARACTER  NUL
   PARAMETER (NUL = CHAR(0))
