@@ -1,3 +1,5 @@
+# Either option 1 or 2
+# 1
 # The GACODE_ROOT environmental variable should point to the root directory where GACODE is installed.
 # Environment variable GACODE_PLATFORM should be set to one of the following systems:
 #   ALCF_BGP ALCF_CETUS BABBAGE BANACH CAOS CARVER CMODWS DELPHI
@@ -8,7 +10,9 @@
 #   LOHAN LOKI LOKI_SCRATCH METIUS NEWT OSX_MOUNTAINLION PACER
 #   PGFORTRAN_OSX PG_OPT64 PG_OPT64_FFTW PG_OPT64_MUMPS PPPL
 #   PPPL_PATHSCALE RANGER SATURN TITAN_CRAY VENUS
-
+# 2
+# Define CC, CFLAGS, FC, FFLAGS, ARCH here or at the command line
+#
 ifdef GACODE_ROOT
 	include ${GACODE_ROOT}/shared/install/make.inc.${GACODE_PLATFORM}
 else
@@ -19,25 +23,25 @@ else
 	ARCH=ar cr
 endif
 
-LLIB=harvest_lib
+LLIB = libharvest.a
 
-EXEC = lib clientC clientF
+EXEC = clientC clientF
 
 OBJECTS = harvest_lib.o harvest_clientC.o harvest_clientF.o
 
-lib: harvest_lib.o Makefile
-	$(ARCH) $(LLIB).a harvest_lib.o
+$(LLIB): harvest_lib.o Makefile
+	$(ARCH) $(LLIB) $<
 
-clientC : lib harvest_client.c
-	$(CC) $(CFLAGS) -o clientC harvest_lib.o harvest_client.c
+clientC : harvest_client.c $(LLIB) 
+	$(CC) $(CFLAGS) -o $@ -L./ -lharvest $<
 
-clientF : lib harvest_client.f90
-	$(FC) $(FFLAGS) -o clientF harvest_lib.o harvest_client.f90
+clientF : harvest_client.f90 $(LLIB) 
+	$(FC) $(FFLAGS) -o $@ -L./ -lharvest $<
 
-all: $(EXEC)
+all: $(LLIB) $(EXEC)
 
 clean:
-	rm -f *.o $(LLIB).a $(EXEC)
+	rm -f *.o  $(EXEC)
 
 gacode_install: all
 	mkdir ${GACODE_ROOT}/shared/harvest_client
