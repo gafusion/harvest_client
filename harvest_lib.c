@@ -57,7 +57,7 @@ int set_harvest_verbose_(int *verbose){
 
 //payload string
 int set_harvest_payload_str_base(char *harvest_sendline, char *what, char *data, char *prepend){
-  if ( (data == NULL) || (strlen(harvest_sendline)==0) ){
+  if ( (data == NULL) || (strlen(data)==0) ){
     sprintf(harvest_sendline,"%s|%s@%s=",harvest_sendline,prepend,what);
   }else{
     sprintf(harvest_sendline,"%s|%s@%s=\"%s\"",harvest_sendline,prepend,what,data);
