@@ -1,4 +1,6 @@
-program f_call_c
+program havest_clientF
+  IMPLICIT NONE
+  INCLUDE 'harvest_lib.inc' !this is not necessary if INCLUDE NONE is not there
 
   CHARACTER(LEN=65507) :: harvest_sendline
   CHARACTER  NUL
@@ -47,4 +49,4 @@ program f_call_c
   ierr=set_harvest_host('localhost')
   ierr=harvest_send(harvest_sendline)
 
-end program f_call_c
+end program havest_clientF
