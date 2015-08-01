@@ -9,13 +9,13 @@ def _data_2_message(payload):
         if isinstance(data,bool):
             tp='b'
             data=int(data)
+        elif isinstance(data,(list,tuple,numpy.ndarray)):
+            tp='a'
+            data=numpy.atleast_1d(data).flatten().tolist()
         elif numpy.array(data).dtype.kind=='i':
             tp='i'
         elif numpy.array(data).dtype.kind=='f':
             tp='f'
-        elif isinstance(data,(list,tuple,numpy.ndarray)):
-            tp='a'
-            data=numpy.atleast_1d(data).flatten().tolist()
         elif isinstance(data,basestring):
             tp='s'
             data=data.strip()
