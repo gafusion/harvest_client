@@ -20,8 +20,6 @@ int main(int argc, char**argv){
   set_harvest_payload_bol(harvest_sendline,"+ctrl",1);
   set_harvest_payload_dbl_array(harvest_sendline,"arr",array,9);
 
-  set_harvest_host("localhost");
-
   harvest_send(harvest_sendline);
 }
 
