@@ -2,6 +2,30 @@
 
 def _data_2_message(payload):
     import numpy
+    import re
+    def formatter(data):
+        data=('%g'%data)
+        if '.' in data:
+            data=data.lstrip('0')
+        data=re.sub('e\-0+','e-',data)
+        data=re.sub('e\+0+','e+',data)
+        return data
+    def compress(tmps):
+        return tmps
+        tmpsc=[]
+        c=-1
+        kold=tmps[0]
+        for k in tmps+[tmps[-1]+' ']:
+            if kold==k:
+                c+=1
+            else:
+                if c==0:
+                    tmpsc.append(kold)
+                else:
+                    tmpsc.append(str(c+1)+'*'+kold)
+                kold=k
+                c=0
+        return tmpsc
 
     message=[]
     for what in payload.keys():
@@ -11,17 +35,19 @@ def _data_2_message(payload):
             data=int(data)
         elif isinstance(data,(list,tuple,numpy.ndarray)):
             tp='a'
-            data=numpy.atleast_1d(data).flatten().tolist()
+            data=re.sub(' ','','['+','.join(compress(map(formatter,numpy.atleast_1d(data).flatten().tolist())))+']' )
         elif numpy.array(data).dtype.kind=='i':
             tp='i'
+            data=str(data)
         elif numpy.array(data).dtype.kind=='f':
             tp='f'
+            data=formatter(data)
         elif isinstance(data,basestring):
             tp='s'
-            data=data.strip()
+            data=repr(data.strip())
         else:
             raise(Exception('%s objects of type %s are not supported'%(what,type(data))))
-        message.append(tp+'@'+what+'='+repr(data))
+        message.append(tp+'@'+what+'='+data)
 
     return '|'.join(message)
 
@@ -44,7 +70,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
     :return: tuple with used (host, port, message)
     '''
-    import os,socket,copy
+    import os,socket,copy,random
 
     version=3
 
@@ -68,13 +94,22 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
     payload['_hostname']=socket.gethostname()
     payload['_workdir']=os.getcwd()
 
-    message = "%d:%s:"%(version,table) + _data_2_message(payload)
-
-    if verbose:
-        print("%s:%d --> %s"%(host,port,message))
+    n=1500
+    message = "%d:%s:%s"%(version,table,_data_2_message(payload))
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(message, (host,port))
+    if len(message)<n:
+        sock.sendto(message, (host,port))
+        if verbose:
+            print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./n,message))
+    else:
+        split_message=[message[x:x+n] for x in range(0,len(message),n)]
+        ID=random.randint(0,999999)
+        for k,message in enumerate(split_message):
+            message = "&%d&%d&%d&%s"%(ID,k,len(split_message),message)
+            sock.sendto(message, (host,port))
+            if verbose:
+                print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./n,message))
 
     return (host,port,message)
 
@@ -107,8 +142,10 @@ def harvest_nc(filename, entries=None, verbose=False):
                 value=nc.variables[entry][:]
             if len(value)==1:
                 payload[entry]=value[0]
-                if verbose:
-                    print(str(entry), value[0])
+            else:
+                payload[entry]=value
+            if verbose:
+                print(str(entry), value[0])
 
     nc.close()
 

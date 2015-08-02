@@ -12,9 +12,29 @@ char harvest_host[100];
 int  harvest_port=3200;
 int  harvest_verbose=1;
 int  harvest_sendline_n=65507;
+int  harvest_sendline_f=1500;
 char harvest_tag[255];
 clock_t harvest_tic;
 clock_t harvest_toc;
+
+long random_at_most(long max) {
+  unsigned long
+    // max <= RAND_MAX < ULONG_MAX, so this is okay.
+    num_bins = (unsigned long) max + 1,
+    num_rand = (unsigned long) RAND_MAX + 1,
+    bin_size = num_rand / num_bins,
+    defect   = num_rand % num_bins;
+
+  long x;
+  do {
+   x = random();
+  }
+  // This is carefully written not to overflow
+  while (num_rand - defect <= (unsigned long)x);
+
+  // Truncated division is intentional
+  return x/bin_size;
+}
 
 //Get ip from domain name
 int hostname_to_ip(char * hostname , char* ip){
@@ -303,8 +323,10 @@ int init_harvest_(char *table, char *harvest_sendline, int *n){
 int harvest_send(char* harvest_sendline){
   int sockfd;
   int version;
+  int i,n;
+  int ID;
   struct sockaddr_in servaddr,cliaddr;
-  char sendline[harvest_sendline_n]; //max UDP message size
+  char message[harvest_sendline_n];
   char harvest_ip[15];
   char hostname[128];
 
@@ -323,15 +345,26 @@ int harvest_send(char* harvest_sendline){
   set_harvest_payload_str(harvest_sendline,"_hostname",hostname);
   set_harvest_payload_str(harvest_sendline,"_workdir",getenv("PWD"));
   set_harvest_payload_str(harvest_sendline,"_tag",getenv(harvest_tag));
-
-  sprintf(sendline,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
+  sprintf(message,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
-  sendto(sockfd,sendline,strlen(sendline),0,
-             (struct sockaddr *)&servaddr,sizeof(servaddr));
 
-  harvest_toc=clock();
+  n=1;
+  if (strlen(message)<harvest_sendline_f){
+    sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+  }else{
+    n=(int)strlen(message)/harvest_sendline_f+1;
+    ID=random_at_most(999999);
+    for(i = 0; i < n; i++){
+//      printf("%d %d\n",i,n);
+      sprintf(harvest_sendline,"&%d&%d&%d&",ID,i,n);
+      strncat(harvest_sendline,message+i*harvest_sendline_f,harvest_sendline_f);
+      sendto(sockfd,harvest_sendline,strlen(harvest_sendline),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    }
+  }
+
   if (harvest_verbose){
-    printf("%s:%d --> %s\n",harvest_ip,harvest_port,sendline);
+    harvest_toc=clock();
+    printf("%s:%d ---[%d]---> %s\n",harvest_ip,harvest_port,n,message);
     printf("===HARVEST ends=== (%3.3f ms)\n",(double)(harvest_toc - harvest_tic) / CLOCKS_PER_SEC * 1E3);
   }
   return 0;
