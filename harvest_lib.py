@@ -115,25 +115,24 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
 def harvest_nc(filename, entries=None, verbose=False):
     '''
-    Function that returns 0d data contained in a netcdf file to be sent by harvest_send
+    Function that returns data contained in a NetCDF3 file to be sent by harvest_send
 
-    :param filename: nectdf3 file
+    :param filename: NetCDF3 file
 
     :param entries: subset of variables to loof for in the NetCDF file
 
     :param verbose: print payload
 
-    :return: payload
+    :return: payload dictionary
     '''
-    import netCDF4
-    
-    nc = netCDF4.Dataset(filename,'r',format='NETCDF3_CLASSIC')
+    import os,netCDF4
 
     payload={}
+    payload['harvest_filename']=os.path.abspath(filename)
 
+    nc = netCDF4.Dataset(filename,'r',format='NETCDF3_CLASSIC')
     if entries is None:
         entries=nc.variables.keys()
-    
     for entry in entries:
         if entry in nc.variables.keys():
             try:
@@ -146,7 +145,6 @@ def harvest_nc(filename, entries=None, verbose=False):
                 payload[entry]=value
             if verbose:
                 print(str(entry), value[0])
-
     nc.close()
 
     return payload

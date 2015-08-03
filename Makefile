@@ -14,7 +14,7 @@
 # Define CC, CFLAGS, FC, FFLAGS, ARCH here or at the command line
 #
 ifdef GACODE_ROOT
-	include ${GACODE_ROOT}/shared/install/make.inc.${GACODE_PLATFORM}
+	include $(GACODE_ROOT)/shared/install/make.inc.$(GACODE_PLATFORM)
 else
 	CC=cc
 	CFLAGS=
@@ -41,8 +41,11 @@ clientF : harvest_client.f90 $(LLIB)
 all: $(LLIB) $(EXEC)
 
 clean:
-	rm -f *.o  $(EXEC)
+	rm -f *.o  *.a $(EXEC)
 
-gacode_install: all
-	mkdir ${GACODE_ROOT}/shared/harvest_client
-	cp -f Makefile harvest_lib.c harvest_lib.h ${GACODE_ROOT}/shared/harvest_client/
+gacode_install:
+	@[ -d $(GACODE_ROOT)/shared/harvest_client ] || mkdir $(GACODE_ROOT)/shared/harvest_client
+	cp -f Makefile harvest_lib.c harvest_lib.h harvest_lib.inc $(GACODE_ROOT)/shared/harvest_client/
+
+omfit_install:
+	cp -f harvest_lib.py $(OMFIT_ROOT)/src/classes/
