@@ -11,15 +11,26 @@
 #   PGFORTRAN_OSX PG_OPT64 PG_OPT64_FFTW PG_OPT64_MUMPS PPPL
 #   PPPL_PATHSCALE RANGER SATURN TITAN_CRAY VENUS
 # 2
-# Define CC, CFLAGS, FC, FFLAGS, ARCH here or at the command line
+# Define CC, CFLAGS, FC, FFLAGS, ARCH at the command line
 #
 ifdef GACODE_ROOT
 	include $(GACODE_ROOT)/shared/install/make.inc.$(GACODE_PLATFORM)
-else
+endif
+
+# defaults
+ifndef CC
 	CC=cc
+endif
+ifndef CFLAGS
 	CFLAGS=
+endif
+ifndef FC
 	FC=gfortran
+endif
+ifndef FFLAGS
 	FFLAGS=
+endif
+ifndef ARCH
 	ARCH=ar cr
 endif
 
