@@ -33,10 +33,10 @@ $(LLIB): harvest_lib.o Makefile
 	$(ARCH) $(LLIB) $<
 
 clientC : harvest_client.c $(LLIB) 
-	$(CC) $(CFLAGS) -o $@ -L./ -lharvest $<
+	$(CC) $(CFLAGS) -o $@ -L./ $< -lharvest
 
 clientF : harvest_client.f90 $(LLIB) 
-	$(FC) $(FFLAGS) -o $@ -L./ -lharvest $<
+	$(FC) $(FFLAGS) -o $@ -L./ $< -lharvest
 
 all: $(LLIB) $(EXEC)
 
