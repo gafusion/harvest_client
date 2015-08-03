@@ -32,7 +32,7 @@ def _data_2_message(payload):
         data=payload[what]
         if isinstance(data,bool):
             tp='b'
-            data=int(data)
+            data=str(int(data))
         elif isinstance(data,(list,tuple,numpy.ndarray)):
             tp='a'
             data=re.sub(' ','','['+','.join(compress(map(formatter,numpy.atleast_1d(data).flatten().tolist())))+']' )
