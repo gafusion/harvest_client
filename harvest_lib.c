@@ -12,7 +12,7 @@ char harvest_host[100];
 int  harvest_port=3200;
 int  harvest_verbose=1;
 int  harvest_sendline_n=65507;
-int  harvest_sendline_f=1500;
+int  harvest_MTU=1400;
 char harvest_tag[255];
 clock_t harvest_tic;
 clock_t harvest_toc;
@@ -349,15 +349,15 @@ int harvest_send(char* harvest_sendline){
   memset(harvest_sendline, 0, harvest_sendline_n);
 
   n=1;
-  if (strlen(message)<harvest_sendline_f){
+  if (strlen(message)<harvest_MTU){
     sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
   }else{
-    n=(int)strlen(message)/harvest_sendline_f+1;
+    n=(int)strlen(message)/harvest_MTU+1;
     ID=random_at_most(999999);
     for(i = 0; i < n; i++){
 //      printf("%d %d\n",i,n);
       sprintf(harvest_sendline,"&%d&%d&%d&",ID,i,n);
-      strncat(harvest_sendline,message+i*harvest_sendline_f,harvest_sendline_f);
+      strncat(harvest_sendline,message+i*harvest_MTU,harvest_MTU);
       sendto(sockfd,harvest_sendline,strlen(harvest_sendline),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
     }
   }
