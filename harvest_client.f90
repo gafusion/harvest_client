@@ -45,8 +45,6 @@ program havest_clientF
   ierr=set_harvest_payload_dbl_array(harvest_sendline,'darr'//NUL,D,SIZE(D))
   ierr=set_harvest_payload_nam(harvest_sendline,'nam'//NUL,namelist_str)
 
-  ierr=set_harvest_host('localhost')
-
   ierr=harvest_send(harvest_sendline)
 
 end program havest_clientF
