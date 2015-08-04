@@ -12,7 +12,7 @@ char harvest_host[100];
 int  harvest_port=3200;
 int  harvest_verbose=1;
 int  harvest_sendline_n=65507;
-int  harvest_MTU=1400;
+int  harvest_MTU=1450;
 char harvest_tag[255];
 clock_t harvest_tic;
 clock_t harvest_toc;
@@ -323,10 +323,11 @@ int init_harvest_(char *table, char *harvest_sendline, int *n){
 int harvest_send(char* harvest_sendline){
   int sockfd;
   int version;
-  int i,n;
+  int i,n,offset,len;
   int ID;
   struct sockaddr_in servaddr,cliaddr;
   char message[harvest_sendline_n];
+  char fragment[harvest_MTU];
   char harvest_ip[15];
   char hostname[128];
 
@@ -345,20 +346,26 @@ int harvest_send(char* harvest_sendline){
   set_harvest_payload_str(harvest_sendline,"_hostname",hostname);
   set_harvest_payload_str(harvest_sendline,"_workdir",getenv("PWD"));
   set_harvest_payload_str(harvest_sendline,"_tag",getenv(harvest_tag));
+  memset(message, 0, harvest_sendline_n);
   sprintf(message,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
 
-  n=1;
+  i=0;
+  offset=0;
   if (strlen(message)<harvest_MTU){
     sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
   }else{
-    n=(int)strlen(message)/harvest_MTU+1;
     ID=random_at_most(999999);
-    for(i = 0; i < n; i++){
-//      printf("%d %d\n",i,n);
-      sprintf(harvest_sendline,"&%d&%d&%d&",ID,i,n);
-      strncat(harvest_sendline,message+i*harvest_MTU,harvest_MTU);
-      sendto(sockfd,harvest_sendline,strlen(harvest_sendline),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    len=harvest_MTU-strlen("&------&---&---&");
+    n=(int)(strlen(message)/len)+1;
+    while(offset<strlen(message)){
+      sprintf(fragment,"&%06d&%03d&%03d&",ID,i,n);
+      strncat(fragment,message+offset,len);
+      //printf("%d %d %d: %s\n",i,n,offset,fragment);
+      sendto(sockfd,fragment,strlen(fragment),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+      offset+=len;
+      i+=1;
+      usleep(1000); //1ms time delay between fragments
     }
   }
 
