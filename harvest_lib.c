@@ -17,25 +17,6 @@ char harvest_tag[255];
 clock_t harvest_tic;
 clock_t harvest_toc;
 
-long random_at_most(long max) {
-  unsigned long
-    // max <= RAND_MAX < ULONG_MAX, so this is okay.
-    num_bins = (unsigned long) max + 1,
-    num_rand = (unsigned long) RAND_MAX + 1,
-    bin_size = num_rand / num_bins,
-    defect   = num_rand % num_bins;
-
-  long x;
-  do {
-   x = random();
-  }
-  // This is carefully written not to overflow
-  while (num_rand - defect <= (unsigned long)x);
-
-  // Truncated division is intentional
-  return x/bin_size;
-}
-
 //Get ip from domain name
 int hostname_to_ip(char * hostname , char* ip){
     struct hostent *he;
@@ -331,6 +312,8 @@ int harvest_send(char* harvest_sendline){
   char harvest_ip[15];
   char hostname[128];
 
+  srand(time(NULL));
+
   version=3;
 
   hostname_to_ip(harvest_host, harvest_ip);
@@ -350,22 +333,24 @@ int harvest_send(char* harvest_sendline){
   sprintf(message,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
 
+  n=1;
   i=0;
   offset=0;
   if (strlen(message)<harvest_MTU){
     sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
   }else{
-    ID=random_at_most(999999);
+    srandom(time(NULL)+clock()+random());
+    ID=(random()+(unsigned int)&ID)%999999;
     len=harvest_MTU-strlen("&------&---&---&");
     n=(int)(strlen(message)/len)+1;
     while(offset<strlen(message)){
       sprintf(fragment,"&%06d&%03d&%03d&",ID,i,n);
       strncat(fragment,message+offset,len);
-      //printf("%d %d %d: %s\n",i,n,offset,fragment);
+      if (harvest_verbose>1){
+        printf("%d %d %d: %s\n",i,n,offset,fragment);}
       sendto(sockfd,fragment,strlen(fragment),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
       offset+=len;
       i+=1;
-      usleep(1000); //1ms time delay between fragments
     }
   }
 

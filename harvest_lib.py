@@ -94,7 +94,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
     payload['_hostname']=socket.gethostname()
     payload['_workdir']=os.getcwd()
 
-    MTU=1400
+    MTU=1450
     message = "%d:%s:%s"%(version,table,_data_2_message(payload))
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -103,10 +103,12 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         if verbose:
             print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
     else:
-        split_message=[message[x:x+MTU] for x in range(0,len(message),MTU)]
-        ID=random.randint(0,999999)
+        fmt="&%06d&%03d&%03d&"
+        n=MTU-len(fmt%(0,0,0))
+        split_message=[message[x:x+n] for x in range(0,len(message),n)]
+        ID=(random.randint(0,10**len(str(id(n))))+id(n))/999999
         for k,message in enumerate(split_message):
-            message = "&%d&%d&%d&%s"%(ID,k,len(split_message),message)
+            message = (fmt+'%s')%(ID,k,len(split_message),message)
             sock.sendto(message, (host,port))
             if verbose:
                 print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
