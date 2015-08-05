@@ -340,7 +340,7 @@ int harvest_send(char* harvest_sendline){
     sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
   }else{
     srandom(time(NULL)+clock()+random());
-    ID=(random()+(unsigned int)&ID)%999999;
+    ID=(long)(random()+&ID)%999999;
     len=harvest_MTU-strlen("&------&---&---&");
     n=(int)(strlen(message)/len)+1;
     while(offset<strlen(message)){
