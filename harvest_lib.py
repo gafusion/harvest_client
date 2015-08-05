@@ -70,7 +70,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
     :return: tuple with used (host, port, message)
     '''
-    import os,socket,copy,random
+    import os,socket,copy,random,time
 
     version=3
 
@@ -110,6 +110,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         for k,message in enumerate(split_message):
             message = (fmt+'%s')%(ID,k,len(split_message),message)
             sock.sendto(message, (host,port))
+            time.sleep(0.01)
             if verbose:
                 print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
 

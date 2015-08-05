@@ -351,6 +351,7 @@ int harvest_send(char* harvest_sendline){
       sendto(sockfd,fragment,strlen(fragment),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
       offset+=len;
       i+=1;
+      usleep(10000);
     }
   }
 
