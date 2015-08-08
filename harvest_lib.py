@@ -51,7 +51,7 @@ def _data_2_message(payload):
 
     return '|'.join(message)
 
-def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=None):
+def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=None, tag=None):
     '''
     Function to send data to the harvesting server
 
@@ -67,6 +67,9 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
     :param verbose: print harvest message to screen
     If None take value from `HARVEST_VERBOSE` environemental variable, or use default `False` if not set.
+
+    :param tag: tag entry
+    If None take value from `HARVEST_TAG` environemental variable, or use default `Null` if not set.
 
     :return: tuple with used (host, port, message)
     '''
@@ -89,10 +92,16 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         if 'HARVEST_VERBOSE' in os.environ:
             verbose=int(os.environ['HARVEST_VERBOSE'])
 
+    if tag is None:
+        tag=''
+        if 'HARVEST_TAG' in os.environ:
+            tag=os.environ['HARVEST_TAG']
+
     payload=copy.deepcopy(payload)
     payload['_user']=os.environ['USER']
     payload['_hostname']=socket.gethostname()
     payload['_workdir']=os.getcwd()
+    payload['_tag']=tag
 
     MTU=1450
     message = "%d:%s:%s"%(version,table,_data_2_message(payload))
