@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+def ddb_float(float_in):
+    '''
+    Convert float to Decimal compatible with DynamoDB format
+
+    :param float_in: input float
+
+    :return: float in Decimal format
+    '''
+    from boto3.dynamodb.types import DYNAMODB_CONTEXT
+    return DYNAMODB_CONTEXT.create_decimal(float_in)
+
 def _data_2_message(payload):
     import numpy
     import re
