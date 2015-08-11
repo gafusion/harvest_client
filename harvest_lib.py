@@ -8,6 +8,8 @@ def ddb_float(float_in):
 
     :return: float in Decimal format
     '''
+    if not isinstance(float_in,basestring):
+        float_in=repr(float(float_in))
     from boto3.dynamodb.types import DYNAMODB_CONTEXT
     return DYNAMODB_CONTEXT.create_decimal(float_in)
 
