@@ -144,10 +144,10 @@ int set_harvest_payload_flt_array(char *harvest_sendline, char *what, float *dat
   int i;
   char datastr[65507];
   sprintf(datastr,"[");
-  for(i = 0; i < len; i++){
+  for(i = 0; i < len-1; i++){
     sprintf(datastr,"%s%g,",datastr,*(data+i));
   }
-  sprintf(datastr,"%s]",datastr);
+  sprintf(datastr,"%s%g]",datastr,*(data+len-1));
   sprintf(harvest_sendline,"%s|a@%s=%s",harvest_sendline,what,datastr);
 
   if (harvest_verbose){
@@ -184,10 +184,10 @@ int set_harvest_payload_dbl_array(char *harvest_sendline, char *what, double *da
   int i;
   char datastr[65507];
   sprintf(datastr,"[");
-  for(i = 0; i < len; i++){
+  for(i = 0; i < len-1; i++){
     sprintf(datastr,"%s%g,",datastr,*(data+i));
   }
-  sprintf(datastr,"%s]",datastr);
+  sprintf(datastr,"%s%g]",datastr,*(data+len-1));
   sprintf(harvest_sendline,"%s|a@%s=%s",harvest_sendline,what,datastr);
 
   if (harvest_verbose){
