@@ -56,6 +56,12 @@ int set_harvest_verbose_(int *verbose){
   return 0;
 }
 
+int set_harvest_verbose__(int *verbose){
+  int verbose_ = *verbose;
+  set_harvest_verbose(verbose_);
+  return 0;
+}
+
 //payload string
 int set_harvest_payload_str_base(char *harvest_sendline, char *what, char *data, char *prepend){
   if ( (data == NULL) || (strlen(data)==0) ){
@@ -80,6 +86,11 @@ int set_harvest_payload_str_(char *harvest_sendline, char *what, char *data){
   return 0;
 }
 
+int set_harvest_payload_str__(char *harvest_sendline, char *what, char *data){
+  set_harvest_payload_str_base(harvest_sendline,what,data,"s");
+  return 0;
+}
+
 //payload namelist
 int set_harvest_payload_nam(char *harvest_sendline, char *what, char *data){
   set_harvest_payload_str_base(harvest_sendline,what,data,"n");
@@ -87,6 +98,11 @@ int set_harvest_payload_nam(char *harvest_sendline, char *what, char *data){
 }
 
 int set_harvest_payload_nam_(char *harvest_sendline, char *what, char *data){
+  set_harvest_payload_str_base(harvest_sendline,what,data,"n");
+  return 0;
+}
+
+int set_harvest_payload_nam__(char *harvest_sendline, char *what, char *data){
   set_harvest_payload_str_base(harvest_sendline,what,data,"n");
   return 0;
 }
@@ -102,6 +118,12 @@ int set_harvest_payload_int(char *harvest_sendline, char *what, int data){
 }
 
 int set_harvest_payload_int_(char *harvest_sendline, char *what, int *data){
+  int data_ = *data;
+  set_harvest_payload_int(harvest_sendline,what,data_);
+  return 0;
+}
+
+int set_harvest_payload_int__(char *harvest_sendline, char *what, int *data){
   int data_ = *data;
   set_harvest_payload_int(harvest_sendline,what,data_);
   return 0;
@@ -123,6 +145,12 @@ int set_harvest_payload_swt_(char *harvest_sendline, char *what, int *data){
   return 0;
 }
 
+int set_harvest_payload_swt__(char *harvest_sendline, char *what, int *data){
+  int data_ = *data;
+  set_harvest_payload_swt(harvest_sendline,what,data_);
+  return 0;
+}
+
 ////payload float
 int set_harvest_payload_flt(char *harvest_sendline, char *what, float data){
   sprintf(harvest_sendline,"%s|f@%s=%g",harvest_sendline,what,data);
@@ -134,6 +162,12 @@ int set_harvest_payload_flt(char *harvest_sendline, char *what, float data){
 }
 
 int set_harvest_payload_flt_(char *harvest_sendline, char *what, float *data){
+  float data_ = *data;
+  set_harvest_payload_flt(harvest_sendline,what,data_);
+  return 0;
+}
+
+int set_harvest_payload_flt__(char *harvest_sendline, char *what, float *data){
   float data_ = *data;
   set_harvest_payload_flt(harvest_sendline,what,data_);
   return 0;
@@ -163,6 +197,12 @@ int set_harvest_payload_flt_array_(char *harvest_sendline, char *what, float *da
   return 0;
 }
 
+int set_harvest_payload_flt_array__(char *harvest_sendline, char *what, float *data, int *len){
+  int len_ = *len;
+  set_harvest_payload_flt_array(harvest_sendline,what,data,len_);
+  return 0;
+}
+
 ////payload double
 int set_harvest_payload_dbl(char *harvest_sendline, char *what, double data){
   sprintf(harvest_sendline,"%s|f@%s=%g",harvest_sendline,what,data);
@@ -174,6 +214,12 @@ int set_harvest_payload_dbl(char *harvest_sendline, char *what, double data){
 }
 
 int set_harvest_payload_dbl_(char *harvest_sendline, char *what, double *data){
+  double data_ = *data;
+  set_harvest_payload_dbl(harvest_sendline,what,data_);
+  return 0;
+}
+
+int set_harvest_payload_dbl__(char *harvest_sendline, char *what, double *data){
   double data_ = *data;
   set_harvest_payload_dbl(harvest_sendline,what,data_);
   return 0;
@@ -203,6 +249,12 @@ int set_harvest_payload_dbl_array_(char *harvest_sendline, char *what, double *d
   return 0;
 }
 
+int set_harvest_payload_dbl_array__(char *harvest_sendline, char *what, double *data, int *len){
+  int len_ = *len;
+  set_harvest_payload_dbl_array(harvest_sendline,what,data,len_);
+  return 0;
+}
+
 ////payload boolean
 int set_harvest_payload_bol(char *harvest_sendline, char *what, int data){
   sprintf(harvest_sendline,"%s|b@%s=%d",harvest_sendline,what,data);
@@ -219,6 +271,12 @@ int set_harvest_payload_bol_(char *harvest_sendline, char *what, int *data){
   return 0;
 }
 
+int set_harvest_payload_bol__(char *harvest_sendline, char *what, int *data){
+  int data_ = *data;
+  set_harvest_payload_bol(harvest_sendline,what,data_);
+  return 0;
+}
+
 //host
 int set_harvest_host(char *host){
   sprintf(harvest_host,"%s",host);
@@ -230,6 +288,11 @@ int set_harvest_host_(char *host){
   return 0;
 }
 
+int set_harvest_host__(char *host){
+  set_harvest_host(host);
+  return 0;
+}
+
 //tag
 int set_harvest_tag(char *tag){
   sprintf(harvest_tag,"%s",tag);
@@ -237,6 +300,11 @@ int set_harvest_tag(char *tag){
 }
 
 int set_harvest_tag_(char *tag){
+  set_harvest_tag(tag);
+  return 0;
+}
+
+int set_harvest_tag__(char *tag){
   set_harvest_tag(tag);
   return 0;
 }
@@ -253,6 +321,12 @@ int set_harvest_port_(int *port){
   return 0;
 }
 
+int set_harvest_port__(int *port){
+  int port_ = *port;
+  set_harvest_port(port_);
+  return 0;
+}
+
 //table
 int set_harvest_table(char *table){
   sprintf(harvest_table,"%s",table);
@@ -260,6 +334,11 @@ int set_harvest_table(char *table){
 }
 
 int set_harvest_table_(char *table){
+  set_harvest_table(table);
+  return 0;
+}
+
+int set_harvest_table__(char *table){
   set_harvest_table(table);
   return 0;
 }
@@ -295,6 +374,12 @@ int init_harvest(char *table, char *harvest_sendline, int n){
 }
 
 int init_harvest_(char *table, char *harvest_sendline, int *n){
+  int n_ = *n;
+  init_harvest(table,harvest_sendline,n_);
+  return 0;
+}
+
+int init_harvest__(char *table, char *harvest_sendline, int *n){
   int n_ = *n;
   init_harvest(table,harvest_sendline,n_);
   return 0;
@@ -364,6 +449,11 @@ int harvest_send(char* harvest_sendline){
 }
 
 int harvest_send_(char* harvest_sendline){
+  harvest_send(harvest_sendline);
+  return 0;
+}
+
+int harvest_send__(char* harvest_sendline){
   harvest_send(harvest_sendline);
   return 0;
 }
