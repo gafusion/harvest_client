@@ -9,9 +9,10 @@
 #include<netdb.h>
 #include<arpa/inet.h>
 char harvest_table[50];
+char harvest_protocol[4];
 char harvest_host[100];
 int  harvest_port=3200;
-int  harvest_verbose=1;
+int  harvest_verbose=0;
 int  harvest_sendline_n=65507;
 int  harvest_MTU=1450;
 char harvest_tag[255];
@@ -184,7 +185,6 @@ int set_harvest_payload_flt_array(char *harvest_sendline, char *what, float *dat
   }
   sprintf(datastr,"%s%g]",datastr,*(data+len-1));
   sprintf(harvest_sendline,"%s|a@%s=%s",harvest_sendline,what,datastr);
-
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("f@%s=%s\n",what,datastr);
@@ -236,7 +236,6 @@ int set_harvest_payload_dbl_array(char *harvest_sendline, char *what, double *da
   }
   sprintf(datastr,"%s%g]",datastr,*(data+len-1));
   sprintf(harvest_sendline,"%s|a@%s=%s",harvest_sendline,what,datastr);
-
   if (harvest_verbose){
     print_storage(harvest_sendline);
     printf("f@%s=%s\n",what,datastr);
@@ -280,6 +279,9 @@ int set_harvest_payload_bol__(char *harvest_sendline, char *what, int *data){
 
 //host
 int set_harvest_host(char *host){
+  if (harvest_verbose){
+    printf("HARVEST HOST: %s\n",host);
+  }
   sprintf(harvest_host,"%s",host);
   return 0;
 }
@@ -296,6 +298,9 @@ int set_harvest_host__(char *host){
 
 //tag
 int set_harvest_tag(char *tag){
+  if (harvest_verbose){
+    printf("HARVEST TAG: %s\n",tag);
+  }
   sprintf(harvest_tag,"%s",tag);
   return 0;
 }
@@ -328,8 +333,39 @@ int set_harvest_port__(int *port){
   return 0;
 }
 
+//protocol
+int set_harvest_protocol(char *protocol){
+  if (harvest_verbose){
+    printf("HARVEST PROTOCOL: %s\n",protocol);
+  }
+  sprintf(harvest_protocol,"%s",protocol);
+  if (getenv("HARVEST_PORT")!=NULL){
+    set_harvest_port(atoi(getenv("HARVEST_PORT")));
+  }else{
+    if (strcmp(harvest_protocol,"UDP")==0){
+      set_harvest_port(32000);
+    }else{
+      set_harvest_port(31000);
+    }
+  }
+  return 0;
+}
+
+int set_harvest_protocol_(char *protocol){
+  set_harvest_protocol(protocol);
+  return 0;
+}
+
+int set_harvest_protocol__(char *protocol){
+  set_harvest_protocol(protocol);
+  return 0;
+}
+
 //table
 int set_harvest_table(char *table){
+  if (harvest_verbose){
+    printf("HARVEST TABLE: %s\n",table);
+  }
   sprintf(harvest_table,"%s",table);
   return 0;
 }
@@ -348,21 +384,34 @@ int set_harvest_table__(char *table){
 int init_harvest(char *table, char *harvest_sendline, int n){
   harvest_tic=clock();
 
-  set_harvest_host("gadb-harvest.ddns.net");
-  if (getenv("HARVEST_HOST")!=NULL)
-    set_harvest_host(getenv("HARVEST_HOST"));
-
-  set_harvest_port(32000);
-  if (getenv("HARVEST_PORT")!=NULL)
-    set_harvest_port(atoi(getenv("HARVEST_PORT")));
-
-  set_harvest_verbose(0);
   if (getenv("HARVEST_VERBOSE")!=NULL)
     set_harvest_verbose(atoi(getenv("HARVEST_VERBOSE")));
+  else
+    set_harvest_verbose(0);
 
-  set_harvest_tag("");
+  if (getenv("HARVEST_HOST")!=NULL)
+    set_harvest_host(getenv("HARVEST_HOST"));
+  else
+    set_harvest_host("gadb-harvest.ddns.net");
+
+  if (getenv("HARVEST_PROTOCOL")!=NULL)
+    set_harvest_tag(getenv("HARVEST_PROTOCOL"));
+  else
+    set_harvest_protocol("UDP");
+
+  if (getenv("HARVEST_PORT")!=NULL){
+    set_harvest_port(atoi(getenv("HARVEST_PORT")));
+  }else{
+    if (strcmp(harvest_protocol,"UDP")==0)
+      set_harvest_port(32000);
+    else
+      set_harvest_port(31000);
+  }
+
   if (getenv("HARVEST_TAG")!=NULL)
     set_harvest_tag(getenv("HARVEST_TAG"));
+  else
+    set_harvest_tag("");
 
   set_harvest_table(table);
 
@@ -371,6 +420,7 @@ int init_harvest(char *table, char *harvest_sendline, int n){
 
   if (harvest_verbose)
     printf("===HARVEST starts===\n");
+
   return 0;
 }
 
@@ -405,7 +455,6 @@ int harvest_send(char* harvest_sendline){
   hostname_to_ip(harvest_host, harvest_ip);
   gethostname(hostname, sizeof hostname);
 
-  sockfd=socket(AF_INET,SOCK_DGRAM,0);
   bzero(&servaddr,sizeof(servaddr));
   servaddr.sin_family = AF_INET;
   servaddr.sin_addr.s_addr=inet_addr(harvest_ip);
@@ -419,26 +468,40 @@ int harvest_send(char* harvest_sendline){
   sprintf(message,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
 
-  n=1;
-  i=0;
-  offset=0;
-  if (strlen(message)<harvest_MTU){
-    sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
-  }else{
-    srandom(time(NULL)+clock()+random());
-    ID=(long)(random()+&ID)%999999;
-    len=harvest_MTU-strlen("&------&---&---&");
-    n=(int)(strlen(message)/len)+1;
-    while(offset<strlen(message)){
-      sprintf(fragment,"&%06d&%03d&%03d&",ID,i,n);
-      strncat(fragment,message+offset,len);
-      if (harvest_verbose>1){
-        printf("%d %d %d: %s\n",i,n,offset,fragment);}
-      sendto(sockfd,fragment,strlen(fragment),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
-      offset+=len;
-      i+=1;
-      usleep(10000);
+  //UDP
+  if (strcmp(harvest_protocol,"UDP")==0){
+    sockfd=socket(AF_INET,SOCK_DGRAM,0);
+    n=1;
+    i=0;
+    offset=0;
+    if (strlen(message)<harvest_MTU){
+      sendto(sockfd,message,strlen(message),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    }else{
+      srandom(time(NULL)+clock()+random());
+      ID=(long)(random()+&ID)%999999;
+      len=harvest_MTU-strlen("&------&---&---&");
+      n=(int)(strlen(message)/len)+1;
+      while(offset<strlen(message)){
+        sprintf(fragment,"&%06d&%03d&%03d&",ID,i,n);
+        strncat(fragment,message+offset,len);
+        if (harvest_verbose>1){
+          printf("%d %d %d: %s\n",i,n,offset,fragment);}
+        sendto(sockfd,fragment,strlen(fragment),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+        offset+=len;
+        i+=1;
+        usleep(10000);
+      }
     }
+
+  //TCP
+  }else{
+    sockfd=socket(AF_INET,SOCK_STREAM,0);
+    if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) <0){
+      perror("ERROR connecting");
+      return -1;
+    }
+    write(sockfd, message, strlen(message));
+    close(sockfd);
   }
 
   if (harvest_verbose){
@@ -446,6 +509,7 @@ int harvest_send(char* harvest_sendline){
     printf("%s:%d ---[%d]---> %s\n",harvest_ip,harvest_port,n,message);
     printf("===HARVEST ends=== (%3.3f ms)\n",(double)(harvest_toc - harvest_tic) / CLOCKS_PER_SEC * 1E3);
   }
+
   return 0;
 }
 

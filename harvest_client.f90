@@ -31,8 +31,9 @@ program havest_clientF
   write(namelist_str,nml=inputs)
   write(namelist_str,*) TRIM(namelist_str),NUL
 
-  ierr=init_harvest('test_harvest?'//NUL,harvest_sendline,LEN(harvest_sendline))
+  ierr=init_harvest('test_harvest'//NUL,harvest_sendline,LEN(harvest_sendline))
   ierr=set_harvest_verbose(1)
+  ierr=set_harvest_protocol('UDP'//NUL)
 
   ierr=set_harvest_payload_str(harvest_sendline,'str'//NUL,'F'//NUL)
   ierr=set_harvest_payload_int(harvest_sendline,'int'//NUL,5)

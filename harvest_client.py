@@ -18,8 +18,8 @@ if False:
         #data['+ctrl'+str(k)]=randn()
         data['dbl']=randn()
         data['flt']=randn()*10
-        harvest_send(data,'test_harvest?',verbose=True)
+        harvest_send(data,'test_harvest',verbose=True)
 
 else:
     data=harvest_nc('eped.nc',verbose=True)
-    harvest_send(data,'test_harvest?',verbose=True)
+    harvest_send(data,'test_harvest',verbose=True,protocol='TCP')
