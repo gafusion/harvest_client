@@ -58,6 +58,9 @@ def _data_2_message(payload):
         elif isinstance(data,basestring):
             tp='s'
             data=repr(data.strip())
+        elif data is None:
+            tp='s'
+            data=''
         else:
             raise(Exception('%s objects of type %s are not supported'%(what,type(data))))
         message.append(tp+'@'+what+'='+data)
