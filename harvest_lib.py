@@ -141,9 +141,13 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         MTU=1450
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if len(message)<MTU:
-            sock.sendto(message, (host,port))
-            if verbose:
-                print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+            try:
+                sock.sendto(message, (host,port))
+                if verbose:
+                    print("%s:%d --UDP--[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+            except Exception as _excp:
+                if verbose:
+                    print(repr(_excp))
         else:
             fmt="&%06d&%03d&%03d&"
             n=MTU-len(fmt%(0,0,0))
@@ -151,19 +155,31 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
             ID=(random.randint(0,10**len(str(id(n))))+id(n))/999999
             for k,message in enumerate(split_message):
                 message = (fmt+'%s')%(ID,k,len(split_message),message)
-                sock.sendto(message, (host,port))
-                time.sleep(0.01)
-                if verbose:
-                    print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+                try:
+                    sock.sendto(message, (host,port))
+                    time.sleep(0.01)
+                    if verbose:
+                        print("%s:%d --UDP--[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+                except Exception as _excp:
+                    if verbose:
+                        print(repr(_excp))
 
     #TCP connection
     else:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((host,port))
             sock.sendall(message)
+            if verbose:
+                print("%s:%d --TCP--> %s"%(host,port,message))
+        except Exception as _excp:
+            if verbose:
+                print(repr(_excp))
         finally:
-            sock.close()
+            try:
+                sock.close()
+            except:
+                pass
 
     return (host,port,message)
 
