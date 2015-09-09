@@ -344,6 +344,24 @@ int set_harvest_tag__(char *tag){
   return 0;
 }
 
+int get_harvest_tag(char *tag, int len){
+  //int max_i = len < strlen(tag) ? len : strlen(tag);
+  //for(int i=0;i<max_i;i++){
+  //  tag[i] = harvest_tag[i];
+  //}
+  //tag[max_i] = NULL;
+  sprintf(tag,"%s",harvest_tag);
+  return 0;
+}
+
+int get_harvest_tag_(char *tag, int *len){
+  return get_harvest_tag(tag, *len);
+}
+
+int get_harvest_tag__(char *tag, int *len){
+  return get_harvest_tag(tag, *len);
+}
+
 //port
 int set_harvest_port(int port){
   harvest_port=port;
