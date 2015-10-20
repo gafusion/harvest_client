@@ -28,8 +28,13 @@ program havest_clientF
   arr1(1,2) = 3
   arr1(2,2) = 4
   hello = 'hello'
+
+#ifndef __INTEL_COMPILER
+
   write(namelist_str,nml=inputs)
   write(namelist_str,*) TRIM(namelist_str),NUL
+  
+#endif
 
   ierr=init_harvest('test_harvest'//NUL,harvest_sendline,LEN(harvest_sendline))
   ierr=set_harvest_verbose(1)
@@ -44,7 +49,9 @@ program havest_clientF
   ierr=set_harvest_payload_bol(harvest_sendline,'+ctrl'//NUL,.True.)
   ierr=set_harvest_payload_flt_array(harvest_sendline,'farr'//NUL,F,SIZE(F))
   ierr=set_harvest_payload_dbl_array(harvest_sendline,'darr'//NUL,D,SIZE(D))
+#ifndef __INTEL_COMPILER
   ierr=set_harvest_payload_nam(harvest_sendline,'nam'//NUL,namelist_str)
+#endif
 
   ierr=harvest_send(harvest_sendline)
 
