@@ -442,7 +442,7 @@ int init_harvest(char *table, char *harvest_sendline, int n){
     set_harvest_host("gadb-harvest.ddns.net");
 
   if (getenv("HARVEST_PROTOCOL")!=NULL)
-    set_harvest_tag(getenv("HARVEST_PROTOCOL"));
+    set_harvest_protocol(getenv("HARVEST_PROTOCOL"));
   else
     set_harvest_protocol("UDP");
 
