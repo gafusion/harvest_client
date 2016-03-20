@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 
+def ddb_float(float_in):
+    '''
+    Convert float to Decimal compatible with DynamoDB format
+
+    :param float_in: input float
+
+    :return: float in Decimal format
+    '''
+    if not isinstance(float_in,basestring):
+        float_in=repr(float(float_in))
+    from boto3.dynamodb.types import DYNAMODB_CONTEXT
+    return DYNAMODB_CONTEXT.create_decimal(float_in)
+
 def _data_2_message(payload):
     import numpy
     import re
@@ -45,13 +58,16 @@ def _data_2_message(payload):
         elif isinstance(data,basestring):
             tp='s'
             data=repr(data.strip())
+        elif data is None:
+            tp='s'
+            data=''
         else:
             raise(Exception('%s objects of type %s are not supported'%(what,type(data))))
         message.append(tp+'@'+what+'='+data)
 
     return '|'.join(message)
 
-def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=None):
+def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=None, tag=None, protocol=None):
     '''
     Function to send data to the harvesting server
 
@@ -68,48 +84,102 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
     :param verbose: print harvest message to screen
     If None take value from `HARVEST_VERBOSE` environemental variable, or use default `False` if not set.
 
+    :param tag: tag entry
+    If None take value from `HARVEST_TAG` environemental variable, or use default `Null` if not set.
+
+    :param protocol: transmission protocol to be ued (`UDP` or `TCP`)
+    If None take value from `HARVEST_PROTOCOL` environemental variable, or use default `UDP` if not set.
+
     :return: tuple with used (host, port, message)
     '''
-    import os,socket,copy,random
+    import os,socket,copy,random,time
 
     version=3
 
     if host is None:
-        host='gadb-harvest.ddns.net'
         if 'HARVEST_HOST' in os.environ:
             host=os.environ['HARVEST_HOST']
+        else:
+            host='gadb-harvest.ddns.net'
+
+    if protocol is None:
+        if 'HARVEST_PROTOCOL' in os.environ:
+            protocol=os.environ['HARVEST_PROTOCOL']
+        else:
+            protocol='UDP'
 
     if port is None:
-        port=32000
         if 'HARVEST_PORT' in os.environ:
             port=int(os.environ['HARVEST_PORT'])
+        elif protocol=='UDP':
+            port=32000
+        else:
+            port=31000
 
     if verbose is None:
-        verbose=int('0')
         if 'HARVEST_VERBOSE' in os.environ:
             verbose=int(os.environ['HARVEST_VERBOSE'])
+        else:
+            verbose=0
+
+    if tag is None:
+        if 'HARVEST_TAG' in os.environ:
+            tag=os.environ['HARVEST_TAG']
+        else:
+            tag=''
 
     payload=copy.deepcopy(payload)
     payload['_user']=os.environ['USER']
     payload['_hostname']=socket.gethostname()
     payload['_workdir']=os.getcwd()
+    payload['_tag']=tag
 
-    MTU=1400
     message = "%d:%s:%s"%(version,table,_data_2_message(payload))
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    if len(message)<MTU:
-        sock.sendto(message, (host,port))
-        if verbose:
-            print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+    #UDP connection
+    if protocol=='UDP':
+        MTU=1450
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if len(message)<MTU:
+            try:
+                sock.sendto(message, (host,port))
+                if verbose:
+                    print("%s:%d --UDP--[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+            except Exception as _excp:
+                if verbose:
+                    print(repr(_excp))
+        else:
+            fmt="&%06d&%03d&%03d&"
+            n=MTU-len(fmt%(0,0,0))
+            split_message=[message[x:x+n] for x in range(0,len(message),n)]
+            ID=(random.randint(0,10**len(str(id(n))))+id(n))/999999
+            for k,message in enumerate(split_message):
+                message = (fmt+'%s')%(ID,k,len(split_message),message)
+                try:
+                    sock.sendto(message, (host,port))
+                    time.sleep(0.01)
+                    if verbose:
+                        print("%s:%d --UDP--[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+                except Exception as _excp:
+                    if verbose:
+                        print(repr(_excp))
+
+    #TCP connection
     else:
-        split_message=[message[x:x+MTU] for x in range(0,len(message),MTU)]
-        ID=random.randint(0,999999)
-        for k,message in enumerate(split_message):
-            message = "&%d&%d&%d&%s"%(ID,k,len(split_message),message)
-            sock.sendto(message, (host,port))
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((host,port))
+            sock.sendall(message)
             if verbose:
-                print("%s:%d -[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+                print("%s:%d --TCP--> %s"%(host,port,message))
+        except Exception as _excp:
+            if verbose:
+                print(repr(_excp))
+        finally:
+            try:
+                sock.close()
+            except:
+                pass
 
     return (host,port,message)
 

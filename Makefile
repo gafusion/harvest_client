@@ -35,7 +35,7 @@ $(LLIB): harvest_lib.o Makefile
 clientC : harvest_client.c $(LLIB) 
 	$(CC) $(CFLAGS) -o $@ -L./ $< -lharvest
 
-clientF : harvest_client.f90 $(LLIB) 
+clientF : harvest_client.F90 $(LLIB) 
 	$(FC) $(FFLAGS) -o $@ -L./ $< -lharvest
 
 all: $(LLIB) $(EXEC)
