@@ -18,7 +18,7 @@ ifdef GACODE_ROOT
 else
 	CC=cc
 	CFLAGS=
-	FC=gfortran
+	FC=FC
 	FFLAGS=
 	ARCH=ar cr
 endif
