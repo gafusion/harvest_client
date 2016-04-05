@@ -136,18 +136,25 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
     message = "%d:%s:%s"%(version,table,_data_2_message(payload))
 
-    #UDP connection
-    if protocol=='UDP':
+    #UDP connection with application level fragmentation
+    if protocol in ['UDP','TCP']:
         MTU=1450
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if len(message)<MTU:
             try:
-                sock.sendto(message, (host,port))
+                if protocol=='UDP':
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    sock.sendto(message, (host,port))
+                else:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((host,port))
+                    sock.sendall(message)
+                    sock.close()
                 if verbose:
-                    print("%s:%d --UDP--[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+                    print("%s:%d --%s--[%3.3f]-> %s"%(host,port,protocol,len(message)*1./MTU,message))
             except Exception as _excp:
                 if verbose:
                     print(repr(_excp))
+
         else:
             fmt="&%06d&%03d&%03d&"
             n=MTU-len(fmt%(0,0,0))
@@ -156,22 +163,29 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
             for k,message in enumerate(split_message):
                 message = (fmt+'%s')%(ID,k,len(split_message),message)
                 try:
-                    sock.sendto(message, (host,port))
+                    if protocol=='UDP':
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        sock.sendto(message, (host,port))
+                    else:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        sock.connect((host,port))
+                        sock.sendall(message)
+                        sock.close()
                     time.sleep(0.01)
                     if verbose:
-                        print("%s:%d --UDP--[%3.3f]-> %s"%(host,port,len(message)*1./MTU,message))
+                        print("%s:%d --%s--[%3.3f]-> %s"%(host,port,protocol,len(message)*1./MTU,message))
                 except Exception as _excp:
                     if verbose:
                         print(repr(_excp))
 
-    #TCP connection
+    #TCP connection with fragmentation at TCP layer
     else:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((host,port))
             sock.sendall(message)
             if verbose:
-                print("%s:%d --TCP--> %s"%(host,port,message))
+                print("%s:%d --%s--> %s"%(host,port,protocol,message))
         except Exception as _excp:
             if verbose:
                 print(repr(_excp))
