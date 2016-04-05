@@ -137,8 +137,8 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
     message = "%d:%s:%s"%(version,table,_data_2_message(payload))
 
     #UDP connection with application level fragmentation
-    if protocol in ['UDP','TCP']:
-        MTU=1450
+    MTU=1450
+    if protocol in ['UDP']:
         if len(message)<MTU:
             try:
                 if protocol=='UDP':
@@ -183,9 +183,19 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((host,port))
-            sock.sendall(message)
-            if verbose:
-                print("%s:%d --%s--> %s"%(host,port,protocol,message))
+#            sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, MTU*256)
+            if False:
+                sock.sendall(message)
+                if verbose:
+                    print("%s:%d --%s--> %s"%(host,port,protocol,message))
+            else:
+                messages=[message[i:i+MTU] for i in range(0, len(message), MTU)]
+                while len(messages):
+                    #time.sleep(0.01)
+                    tmp=messages.pop(0)
+                    sock.send(tmp)
+                    if verbose:
+                        print("%s:%d --%s--> %s"%(host,port,protocol,tmp))
         except Exception as _excp:
             if verbose:
                 print(repr(_excp))
