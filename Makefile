@@ -11,7 +11,7 @@
 #   PGFORTRAN_OSX PG_OPT64 PG_OPT64_FFTW PG_OPT64_MUMPS PPPL
 #   PPPL_PATHSCALE RANGER SATURN TITAN_CRAY VENUS
 # 2
-# Define CC, CFLAGS, FC, FFLAGS, ARCH here or at the command line
+# Define CC, CFLAGS, FC, FFLAGS, ARCH here or at the command line (make FC=FC, for instance)
 #
 ifdef GACODE_ROOT
 	include $(GACODE_ROOT)/shared/install/make.inc.$(GACODE_PLATFORM)
@@ -35,7 +35,7 @@ $(LLIB): harvest_lib.o Makefile
 clientC : harvest_client.c $(LLIB) 
 	$(CC) $(CFLAGS) -o $@ -L./ $< -lharvest
 
-clientF : harvest_client.f90 $(LLIB) 
+clientF : harvest_client.F90 $(LLIB) 
 	$(FC) $(FFLAGS) -o $@ -L./ $< -lharvest
 
 all: $(LLIB) $(EXEC)

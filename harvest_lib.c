@@ -345,11 +345,6 @@ int set_harvest_tag__(char *tag){
 }
 
 int get_harvest_tag(char *tag, int len){
-  //int max_i = len < strlen(tag) ? len : strlen(tag);
-  //for(int i=0;i<max_i;i++){
-  //  tag[i] = harvest_tag[i];
-  //}
-  //tag[max_i] = NULL;
   sprintf(tag,"%s",harvest_tag);
   return 0;
 }
@@ -442,7 +437,7 @@ int init_harvest(char *table, char *harvest_sendline, int n){
     set_harvest_host("gadb-harvest.ddns.net");
 
   if (getenv("HARVEST_PROTOCOL")!=NULL)
-    set_harvest_tag(getenv("HARVEST_PROTOCOL"));
+    set_harvest_protocol(getenv("HARVEST_PROTOCOL"));
   else
     set_harvest_protocol("UDP");
 
@@ -510,7 +505,7 @@ int harvest_send(char* harvest_sendline){
   set_harvest_payload_str(harvest_sendline,"_user",getenv("USER"));
   set_harvest_payload_str(harvest_sendline,"_hostname",hostname);
   set_harvest_payload_str(harvest_sendline,"_workdir",getenv("PWD"));
-  set_harvest_payload_str(harvest_sendline,"_tag",getenv(harvest_tag));
+  set_harvest_payload_str(harvest_sendline,"_tag",harvest_tag);
   memset(message, 0, harvest_sendline_n);
   sprintf(message,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
