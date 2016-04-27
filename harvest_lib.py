@@ -222,7 +222,7 @@ def harvest_nc(filename, entries=None, verbose=False):
     import os,netCDF4
 
     payload={}
-    payload['harvest_filename']=os.path.abspath(filename)
+    payload['_harvest_filename']=os.path.abspath(filename)
 
     nc = netCDF4.Dataset(filename,'r',format='NETCDF3_CLASSIC')
     if entries is None:
