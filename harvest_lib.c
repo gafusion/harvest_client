@@ -64,6 +64,26 @@ int set_harvest_verbose__(int *verbose){
   return 0;
 }
 
+//payload raw
+int set_harvest_payload_raw(char *harvest_sendline, char *data){
+    sprintf(harvest_sendline,"%s%s",harvest_sendline,data);
+  if (harvest_verbose){
+    print_storage(harvest_sendline);
+    printf("%s\n",data);
+  }
+  return 0;
+}
+
+int set_harvest_payload_raw_(char *harvest_sendline, char *data){
+  set_harvest_payload_raw(harvest_sendline,data);
+  return 0;
+}
+
+int set_harvest_payload_raw__(char *harvest_sendline, char *data){
+  set_harvest_payload_raw(harvest_sendline,data);
+  return 0;
+}
+
 //payload string
 int set_harvest_payload_str_base(char *harvest_sendline, char *what, char *data, char *prepend){
   if ( (data == NULL) || (strlen(data)==0) ){
