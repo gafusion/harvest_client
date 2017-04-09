@@ -14,7 +14,7 @@
 # Define CC, CFLAGS, FC, FFLAGS, ARCH here or at the command line (make FC=FC, for instance)
 #
 ifdef GACODE_ROOT
-	include $(GACODE_ROOT)/shared/install/make.inc.$(GACODE_PLATFORM)
+	include $(GACODE_ROOT)/platform/build/make.inc.$(GACODE_PLATFORM)
 else
 	CC=cc
 	CFLAGS=
