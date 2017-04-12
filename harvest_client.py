@@ -3,7 +3,7 @@
 from harvest_lib import *
 from numpy.random import *
 
-if False:
+if True:
     data={}
     data['str']='PY'
     data['int']=5
@@ -18,8 +18,8 @@ if False:
         #data['+ctrl'+str(k)]=randn()
         data['dbl']=randn()
         data['flt']=randn()*10
-        harvest_send(data,'test_harvest',verbose=True)
+        harvest_send(data,'test_harvest',verbose=True,host='localhost')
 
 else:
     data=harvest_nc('eped.nc',verbose=True)
-    harvest_send(data,'test_harvest',verbose=True,protocol='TCP')
+    harvest_send(data,'test_harvest',verbose=True,protocol='TCP',host='localhost')
