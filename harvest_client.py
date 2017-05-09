@@ -12,13 +12,13 @@ if True:
     data['dbl']=5.5
     data['bol']=True
     data['+ctrl']=0.6
-    data['_tag']=''
+    data['_tag']='test'
 
-    for k in range(100):
+    for k in range(1000):
         #data['+ctrl'+str(k)]=randn()
         data['dbl']=randn()
         data['flt']=randn()*10
-        harvest_send(data,'test_harvest',verbose=True,host='localhost')
+        harvest_send(data,'test_harvest',verbose=True,host='localhost',protocol='TCP',)
 
 else:
     data=harvest_nc('eped.nc',verbose=True)
