@@ -14,7 +14,7 @@ if True:
     data['+ctrl']=0.6
     data['_tag']='test'
 
-    for k in range(1000):
+    for k in range(3):
         #data['+ctrl'+str(k)]=randn()
         data['dbl']=randn()
         data['flt']=randn()*10

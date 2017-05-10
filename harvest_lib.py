@@ -122,17 +122,18 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         else:
             verbose=0
 
-    if tag is None:
-        if 'HARVEST_TAG' in os.environ:
-            tag=os.environ['HARVEST_TAG']
-        else:
-            tag=''
-
     payload=copy.deepcopy(payload)
     payload['_user']=os.environ['USER']
     payload['_hostname']=socket.gethostname()
     payload['_workdir']=os.getcwd()
-    payload['_tag']=tag
+
+    if '_tag' not in payload:
+        if tag is None:
+            if 'HARVEST_TAG' in os.environ:
+                tag=os.environ['HARVEST_TAG']
+            else:
+                tag=''
+        payload['_tag']=tag
 
     message = "%d:%s:%s"%(version,table,_data_2_message(payload))
 
