@@ -45,7 +45,7 @@ def _data_2_message(payload):
     message=[]
     for what in payload.keys():
         data=payload[what]
-        if isinstance(data,bool):
+        if isinstance(data,(bool,numpy.bool_)):
             tp='b'
             data=str(int(data))
         elif isinstance(data,(list,tuple,numpy.ndarray)):
@@ -213,7 +213,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         finally:
             try:
                 sock.close()
-            except:
+            except Exception:
                 pass
 
     return (host,port,message)
