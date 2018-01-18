@@ -442,6 +442,19 @@ int set_harvest_table__(char *table){
   return 0;
 }
 
+int get_harvest_table(char *table, int len){
+  sprintf(table,"%s",harvest_table);
+  return 0;
+}
+
+int get_harvest_table_(char *table, int *len){
+  return get_harvest_table(table, *len);
+}
+
+int get_harvest_table__(char *table, int *len){
+  return get_harvest_table(table, *len);
+}
+
 //init
 int init_harvest(char *table, char *harvest_sendline, int n){
   harvest_tic=clock();
