@@ -475,7 +475,12 @@ int init_harvest(char *table, char *harvest_sendline, int n){
   else
     set_harvest_tag("");
 
-  set_harvest_table(table);
+  if (getenv("HARVEST_TABLE")!=NULL && table[0]=='\0')
+    set_harvest_table(getenv("HARVEST_TABLE"));
+  else if (table[0]!='\0')
+    set_harvest_table(table);
+  else
+    set_harvest_table("test_harvest");
 
   harvest_sendline_n=n;
   memset(harvest_sendline, 0, harvest_sendline_n);
