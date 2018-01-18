@@ -492,8 +492,6 @@ int init_harvest(char *table, char *harvest_sendline, int n){
     set_harvest_table(getenv("HARVEST_TABLE"));
   else if (table[0]!='\0')
     set_harvest_table(table);
-  else
-    set_harvest_table("test_harvest");
 
   harvest_sendline_n=n;
   memset(harvest_sendline, 0, harvest_sendline_n);
@@ -547,6 +545,12 @@ int harvest_send(char* harvest_sendline){
   memset(message, 0, harvest_sendline_n);
   sprintf(message,"%d:%s:%s",version,harvest_table,harvest_sendline+1);
   memset(harvest_sendline, 0, harvest_sendline_n);
+
+  if (harvest_table[0]=='\0'){
+    if (harvest_verbose)
+        printf("DATA_NOT_SENT ---[%d]---> %s\n",n,message);
+    return 1;
+  }
 
   //UDP
   if (strcmp(harvest_protocol,"UDP")==0){

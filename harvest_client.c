@@ -8,7 +8,7 @@ int main(int argc, char**argv){
   char harvest_sendline[65507];
   double array[9]={10., 23., 42., 1., 654., 0., 40652., 22., 0.};
 
-  init_harvest("test_harvest",harvest_sendline,sizeof(harvest_sendline));
+  init_harvest("",harvest_sendline,sizeof(harvest_sendline));
   set_harvest_verbose(1);
   set_harvest_protocol("UDP");
 
