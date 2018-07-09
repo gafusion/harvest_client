@@ -128,7 +128,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
 
     payload_=payload.__class__()
     if process is None:
-        payload_.update(payload_)
+        payload_.update(payload)
     else:
         for item in payload.keys():
             payload_[item]=process(payload[item])
