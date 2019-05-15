@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+# file processed by 2to3
+from __future__ import print_function, absolute_import
+
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
 
 __all__ = ['ddb_float', 'harvest_send', 'harvest_nc']
 
@@ -43,14 +48,14 @@ def _data_2_message(payload):
         return tmpsc
 
     message=[]
-    for what in payload.keys():
+    for what in list(payload.keys()):
         data=payload[what]
         if isinstance(data,(bool,numpy.bool_)):
             tp='b'
             data=str(int(data))
         elif isinstance(data,(list,tuple,numpy.ndarray)):
             tp='a'
-            data=re.sub(' ','','['+','.join(compress(map(formatter,numpy.atleast_1d(data).flatten().tolist())))+']' )
+            data=re.sub(' ','','['+','.join(compress(list(map(formatter,numpy.atleast_1d(data).flatten().tolist()))))+']' )
         elif numpy.array(data).dtype.kind=='i':
             tp='i'
             data=str(data)
@@ -78,21 +83,21 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
     :param table: table where to put the data
 
     :param host: harvesting server address
-    If None take value from `HARVEST_HOST` environemental variable, or use default `gadb-harvest.ddns.net` if not set.
+        If None take value from `HARVEST_HOST` environemental variable, or use default `gadb-harvest.ddns.net` if not set.
 
     :param port: port the harvesting server is listening on.
-    If None take value from `HARVEST_PORT` environemental variable, or use default `0` if not set.
+        If None take value from `HARVEST_PORT` environemental variable, or use default `0` if not set.
 
     :param verbose: print harvest message to screen
-    If None take value from `HARVEST_VERBOSE` environemental variable, or use default `False` if not set.
+        If None take value from `HARVEST_VERBOSE` environemental variable, or use default `False` if not set.
 
     :param tag: tag entry
-    If None take value from `HARVEST_TAG` environemental variable, or use default `Null` if not set.
+        If None take value from `HARVEST_TAG` environemental variable, or use default `Null` if not set.
 
     :param protocol: transmission protocol to be ued (`UDP` or `TCP`)
-    If None take value from `HARVEST_PROTOCOL` environemental variable, or use default `UDP` if not set.
+        If None take value from `HARVEST_PROTOCOL` environemental variable, or use default `UDP` if not set.
 
-    :param process: function passed by user that is called on each of the payload element prior submission
+    :param process: function passed by user that is called on each of the payload elements prior to submission
 
     :return: tuple with used (host, port, message)
     '''
@@ -131,9 +136,9 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
             raise ValueError('The keys of the payload must not contain `|` or `=`:'+k)
     payload_=payload.__class__()
     if process is None:
-        payload_.update(payload)
+        payload_.update(payload_)
     else:
-        for item in payload.keys():
+        for item in list(payload.keys()):
             payload_[item]=process(payload[item])
 
     payload_['_user']=os.environ['USER']
@@ -173,7 +178,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
             fmt="&%06d&%03d&%03d&"
             n=MTU-len(fmt%(0,0,0))
             split_message=[message[x:x+n] for x in range(0,len(message),n)]
-            ID=(random.randint(0,10**len(str(id(n))))+id(n))/999999
+            ID=int((random.randint(0,10**len(str(id(n))))+id(n))//999999)
             for k,message in enumerate(split_message):
                 message = (fmt+'%s')%(ID,k,len(split_message),message)
                 try:
@@ -240,9 +245,9 @@ def harvest_nc(filename, entries=None, verbose=False):
 
     nc = netCDF4.Dataset(filename,'r',format='NETCDF3_CLASSIC')
     if entries is None:
-        entries=nc.variables.keys()
+        entries=list(nc.variables.keys())
     for entry in entries:
-        if entry in nc.variables.keys():
+        if entry in list(nc.variables.keys()):
             try:
                 value=nc.variables[entry].getValue()[0]
             except Exception:
