@@ -126,6 +126,9 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         else:
             verbose=0
 
+    for k in payload:
+        if '|' in k or '=' in k:
+            raise ValueError('The keys of the payload must not contain `|` or `=`:'+k)
     payload_=payload.__class__()
     if process is None:
         payload_.update(payload)
