@@ -48,4 +48,4 @@ gacode_install:
 	cp -f Makefile harvest_lib.c harvest_lib.h harvest_lib.inc harvest_lib.py $(GACODE_ROOT)/shared/harvest_client/
 
 omfit_install:
-	cp -f harvest_lib.py $(OMFIT_ROOT)/src/classes/
+	cp -f harvest_lib.py $(OMFIT_ROOT)/omfit/classes/
