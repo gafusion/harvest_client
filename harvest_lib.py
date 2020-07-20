@@ -166,16 +166,15 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         if len(message) < MTU:
             try:
                 if protocol == 'UDP':
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    if sys.version_info > (3, 0):
-                        sock.sendto(bytes(message, 'utf8'), (host, port))
-                    else:
-                        sock.sendto(message, (host, port))
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                        if sys.version_info > (3, 0):
+                            sock.sendto(bytes(message, 'utf8'), (host, port))
+                        else:
+                            sock.sendto(message, (host, port))
                 else:
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.connect((host, port))
-                    sock.sendall(message)
-                    sock.close()
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                        sock.connect((host, port))
+                        sock.sendall(message)
                 if verbose:
                     print("%s:%d --%s--[%3.3f]-> %s" % (host, port, protocol, len(message) * 1. / MTU, message))
             except Exception as _excp:
