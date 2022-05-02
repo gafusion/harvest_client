@@ -467,7 +467,7 @@ int init_harvest(char *table, char *harvest_sendline, int n){
   if (getenv("HARVEST_HOST")!=NULL)
     set_harvest_host(getenv("HARVEST_HOST"));
   else
-    set_harvest_host("gadb-harvest.ddns.net");
+    set_harvest_host("gadb-harvest.duckdns.org");
 
   if (getenv("HARVEST_PROTOCOL")!=NULL)
     set_harvest_protocol(getenv("HARVEST_PROTOCOL"));

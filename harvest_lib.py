@@ -88,7 +88,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
     :param table: table where to put the data
 
     :param host: harvesting server address
-        If None take value from `HARVEST_HOST` environemental variable, or use default `gadb-harvest.ddns.net` if not set.
+        If None take value from `HARVEST_HOST` environemental variable, or use default `gadb-harvest.duckdns.org` if not set.
 
     :param port: port the harvesting server is listening on.
         If None take value from `HARVEST_PORT` environemental variable, or use default `0` if not set.
@@ -114,7 +114,7 @@ def harvest_send(payload, table='test_harvest', host=None, port=None, verbose=No
         if 'HARVEST_HOST' in os.environ:
             host = os.environ['HARVEST_HOST']
         else:
-            host = 'gadb-harvest.ddns.net'
+            host = 'gadb-harvest.duckdns.org'
 
     if protocol is None:
         if 'HARVEST_PROTOCOL' in os.environ:
